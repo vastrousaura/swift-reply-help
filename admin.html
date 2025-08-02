@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin Side - Help Desk</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .container {
+    display: flex;
+    flex-direction: column; /* Stack cards vertically downward */
+    gap: 20px;
+    max-width: 340px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1.2em;
+    color: #1a73e8;
+  }
+  .profile, .agency {
+    font-weight: 600;
+    color: #333;
+  }
+  .details {
+    max-width: 960px;
+    margin: 25px auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    padding: 20px 25px;
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .details h2 {
+    margin-top: 0;
+  }
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    resize: vertical;
+  }
+  .status-controls {
+    display: flex;
+    gap: 15px;
+  }
+  .status-controls button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  .in-progress {
+    background-color: #f9a825;
+    color: white;
+  }
+  .in-progress:hover {
+    background-color: #c17900;
+  }
+  .resolved {
+    background-color: #43a047;
+    color: white;
+  }
+  .resolved:hover {
+    background-color: #2e7031;
+  }
+</style>
+</head>
+<body>
+  <h1>Admin Help Desk - Complaints Overview</h1>
+  <div class="container" id="complaintCards">
+    <!-- Complaint cards will be generated here -->
+  </div>
+
+  <div class="details" id="complaintDetails">
+    <h2 id="detailTitle">Complaint Details</h2>
+    <div><strong>Profile:</strong> <span id="detailProfile"></span></div>
+    <div><strong>Agency:</strong> <span id="detailAgency"></span></div>
+    <div><strong>Problem Type:</strong> <span id="detailProblemType"></span></div>
+    <div><strong>Description:</strong></div>
+    <textarea id="detailDescription" readonly></textarea>
+    <div class="status-controls">
+      <button class="in-progress" id="markInProgress">Mark In Progress</button>
+      <button class="resolved" id="markResolved">Mark Resolved</button>
+    </div>
+  </div>
+
+  <script>
+    // Sample complaint data
+    const complaints = [
+      {id:1, problemType: "Technical Issue", profile: "User A", agency: "Agency X", description: "System error when logging in.", status: "Open"},
+      {id:2, problemType: "Billing Question", profile: "User B", agency: "Agency Y", description: "Incorrect billing amount charged.", status: "Open"},
+      {id:3, problemType: "Technical Issue", profile: "User C", agency: "Agency Z", description: "Slow performance on dashboard.", status: "In Progress"},
+      {id:4, problemType: "Other", profile: "User D", agency: "Agency X", description: "Request for feature enhancement.", status: "Resolved"}
+    ];
+
+    const complaintCards = document.getElementById('complaintCards');
+    const complaintDetails = document.getElementById('complaintDetails');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailProfile = document.getElementById('detailProfile');
+    const detailAgency = document.getElementById('detailAgency');
+    const detailProblemType = document.getElementById('detailProblemType');
+    const detailDescription = document.getElementById('detailDescription');
+    const markInProgressBtn = document.getElementById('markInProgress');
+    const markResolvedBtn = document.getElementById('markResolved');
+
+    let selectedComplaintId = null;
+
+    // Render complaint cards in vertical stack container
+    function renderComplaintCards() {
+      complaintCards.innerHTML = '';
+      complaints.forEach(complaint => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-title">${complaint.problemType}</div>
+          <div class="profile">Profile: ${complaint.profile}</div>
+          <div class="agency">Agency: ${complaint.agency}</div>
+        `;
+        card.onclick = () => openComplaintDetails(complaint.id);
+        complaintCards.appendChild(card);
+      });
+    }
+
+    // Open complaint detail view for selected card
+    function openComplaintDetails(id) {
+      const complaint = complaints.find(c => c.id === id);
+      if (!complaint) return;
+      selectedComplaintId = id;
+      detailTitle.textContent = `Complaint Details - ${complaint.problemType}`;
+      detailProfile.textContent = complaint.profile;
+      detailAgency.textContent = complaint.agency;
+      detailProblemType.textContent = complaint.problemType;
+      detailDescription.value = complaint.description;
+      complaintDetails.style.display = 'flex';
+      window.scrollTo({top: complaintDetails.offsetTop, behavior: 'smooth'});
+    }
+
+    // Update complaint status
+    function updateComplaintStatus(id, newStatus) {
+      const complaint = complaints.find(c => c.id === id);
+      if (!complaint) return;
+      complaint.status = newStatus;
+      alert(`Ticket status updated to ${newStatus}`);
+      complaintDetails.style.display = 'none';
+      selectedComplaintId = null;
+      renderComplaintCards();
+    }
+
+    // Button event listeners
+    markInProgressBtn.onclick = () => {
+      if (selectedComplaintId === null) return;
+      updateComplaintStatus(selectedComplaintId, 'In Progress');
+    };
+
+    markResolvedBtn.onclick = () => {
+      if (selectedComplaintId === null) return;
+      updateComplaintStatus(selectedComplaintId, 'Resolved');
+    };
+
+    // Initial render
+    renderComplaintCards();
+  </script>
+</body>
+</html>
